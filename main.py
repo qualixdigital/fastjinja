@@ -1,19 +1,21 @@
-# main.py
+# main.py  –  FastHTML + Jinja2 only
 from fasthtml.common import *
-from fastapi.templating import Jinja2Templates  # NEW
-from starlette.requests import Request           # NEW
+from jinja2 import Environment, FileSystemLoader
 
+# 1) FastHTML app
 app, rt = fast_app()
 
-# NEW: Jinja2 setup
-templates = Jinja2Templates(directory="templates")
+# 2) Jinja2 setup
+jinja_env = Environment(loader=FileSystemLoader("templates"))
 
+# 3) helper that wraps Jinja2 rendering
+def render(template_name, **ctx):
+    return HTMLResponse(jinja_env.get_template(template_name).render(**ctx))
+
+# 4) route returning a Jinja2 template
 @rt("/")
-def get(request: Request):                       # NEW: accept request
-    # NEW: use Jinja2 instead of FastHTML helpers
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "title": "FastHTML + Jinja2 on Render"}
-    )
+def get():
+    return render("index.html", title="FastHTML + Jinja2")
 
+# 5) start server
 serve()
